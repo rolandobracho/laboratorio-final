@@ -1,0 +1,32 @@
+name: pipeline
+on:
+  push:
+    branches: 
+      - pipelines
+
+jobs:
+  sonarcloud-sast:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 19
+
+      - name: Install SonarScanner
+        run: npm install -g sonarqube-scanner
+
+      - name: Run SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.usachsonar }}
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=rolandobracho \
+            -Dsonar.organization=rolandobracho \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.javascript.node.version=19 \
+            -Dsonar.sources=src
