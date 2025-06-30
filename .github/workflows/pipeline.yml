@@ -29,4 +29,6 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.javascript.node.version=19 \
-            -Dsonar.sources=src
+            -Dsonar.sources=src \
+            -Dsonar.projectName="laboratorio-final" \
+            -Dsonar.projectVersion=1.0
