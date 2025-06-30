@@ -37,7 +37,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          response=$(curl -s -X GET -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/issues/search?branch=pipelines&componentKeys=rolandobracho_laboratorio-final&facets=severities")
+          response=$(curl -s -X GET -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/issues/search?branch=main&componentKeys=rolandobracho_laboratorio-final&facets=severities")
           echo "Respuesta completa de la API:"
           echo "$response" | jq .
           count=$(curl -s -X GET -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/issues/search?branch=pipelines&componentKeys=rolandobracho_laboratorio-final&facets=severities" | 
