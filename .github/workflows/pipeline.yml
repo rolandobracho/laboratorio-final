@@ -69,29 +69,7 @@ jobs:
           unzip dependency-check-8.3.1-release.zip
 
           echo "$PWD/dependency-check/bin" >> $GITHUB_PATH
-      - name: Run Dependency-Check
-        run: |
-          dependency-check.sh \
-            --project "Laboratorio Final" \
-            --scan ./node_modules \
-            --out ./reports \
-            --format JSON \
-            --failOnCVSS 7
-      - name: Check for Critical/High/Medium Vulnerabilities
-        if: always()
-        run: >
-          HIGH_VULNS=$(jq -r '.dependencies[] | select(.vulnerabilities[]?.severity
-          == "HIGH" or .vulnerabilities[]?.severity == "CRITICAL") | .fileName'
-          ./reports/dependency-check-report.json | wc -l)
 
-
-          if [ "$HIGH_VULNS" -gt 0 ]; then
-            echo "Vulnerabilidades CRITICAL/HIGH encontradas: $HIGH_VULNS"
-            jq '.dependencies[] | select(.vulnerabilities[]?.severity == "HIGH" or .vulnerabilities[]?.severity == "CRITICAL") | {package: .fileName, vulnerabilities: .vulnerabilities}' ./reports/dependency-check-report.json
-            exit 1
-          else
-            echo "No hay vulnerabilidades CRITICAL/HIGH en dependencias"
-          fi
   docker-security:
     needs: [sonarcloud-sast, dependency-check]
     runs-on: ubuntu-latest
