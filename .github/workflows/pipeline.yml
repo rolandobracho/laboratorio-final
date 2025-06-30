@@ -1,4 +1,3 @@
----
 name: pipeline
 on:
   push:
@@ -93,3 +92,28 @@ jobs:
           else
             echo "No hay vulnerabilidades CRITICAL/HIGH en dependencias"
           fi
+  docker-security:
+    needs: [sonarcloud-sast, dependency-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        run: |
+          docker build -t reddit-clone .
+          docker save reddit-clone -o image.tar
+
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'image.tar'
+          format: 'table'
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          timeout: '5m0s'
