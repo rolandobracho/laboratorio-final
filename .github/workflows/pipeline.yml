@@ -72,26 +72,28 @@ jobs:
 
   docker-security:
     needs: [sonarcloud-sast, dependency-check]
+    if: needs.dependency-check.outputs.check_results.has_vulnerabilities == 'false'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+  
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
+  
       - name: Build Docker image
+        id: build-image
         run: |
           docker build -t reddit-clone .
-          docker save reddit-clone -o image.tar
-
+          echo "image_name=reddit-clone" >> $GITHUB_OUTPUT
+  
       - name: Scan with Trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasec/trivy-action@master
         with:
-          image-ref: 'image.tar'
+          image-ref: '${{ steps.build-image.outputs.image_name }}'
           format: 'table'
           exit-code: '1'
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          timeout: '5m0s'
+          scan-ref: 'reddit-clone'
