@@ -69,7 +69,34 @@ jobs:
           unzip dependency-check-8.3.1-release.zip
 
           echo "$PWD/dependency-check/bin" >> $GITHUB_PATH
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'Laboratorio Final'
+          scan_dir: .
+          format: 'JSON'
+          fail_on_cvss: 7
+          additional_args: '--enableExperimental'
 
+      - name: Check OWASP Results
+        id: check_results
+        run: |
+          if [ -f "./dependency-check-report.json" ]; then
+            count=$(jq -r '[.dependencies[]?.vulnerabilities[]? | select(.severity == "HIGH" or .severity == "CRITICAL")] | length' ./dependency-check-report.json)
+            if [ "$count" -gt 0 ]; then
+              echo "Vulnerabilidades CRITICAL/HIGH encontradas: $count"
+              jq '.dependencies[] | select(.vulnerabilities[]?.severity == "HIGH" or .vulnerabilities[]?.severity == "CRITICAL") | {package: .fileName, vulnerabilities: .vulnerabilities[]}' ./dependency-check-report.json
+              echo "has_vulnerabilities=true" >> $GITHUB_OUTPUT
+              exit 1  # Falla el job si hay vulnerabilidades
+            else
+              echo "No hay vulnerabilidades CRITICAL/HIGH"
+              echo "has_vulnerabilities=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Reporte no generado"
+            echo "has_vulnerabilities=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
   docker-security:
     needs: [sonarcloud-sast, dependency-check]
     if: always()
