@@ -40,7 +40,7 @@ jobs:
           response=$(curl -s -X GET -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/issues/search?branch=main&componentKeys=rolandobracho_laboratorio-final&facets=severities")
           echo "Respuesta completa de la API:"
           echo "$response" | jq .
-          count=$(curl -s -X GET -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/issues/search?branch=pipelines&componentKeys=rolandobracho_laboratorio-final&facets=severities" | 
+          count=$(curl -s -X GET -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/issues/search?branch=main&componentKeys=rolandobracho_laboratorio-final&facets=severities" | 
                   jq -r '[.facets[0].values[] | select(.val == "CRITICAL" or .val == "HIGH" or .val == "MEDIUM") | .count] | add // 0')
           if [ "$count" -gt 0 ]; then
             echo "Vulnerabilidades encontradas (Critical/High/Medium): $count"
@@ -48,3 +48,21 @@ jobs:
           else
             echo "No hay vulnerabilidades graves. Continuando..."
           fi
+  dependency-check:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+  
+        - name: Set up Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: 19
+  
+        - name: Install OWASP Dependency-Check
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y wget unzip
+            wget https://github.com/jeremylong/DependencyCheck/releases/download/v8.3.1/dependency-check-8.3.1-release.zip
+            unzip dependency-check-8.3.1-release.zip
+            echo "$PWD/dependency-check/bin" >> $GITHUB_PATH
