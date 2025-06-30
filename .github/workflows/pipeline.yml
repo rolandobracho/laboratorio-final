@@ -31,4 +31,5 @@ jobs:
             -Dsonar.javascript.node.version=19 \
             -Dsonar.sources=src \
             -Dsonar.projectName="laboratorio-final" \
-            -Dsonar.projectVersion=1.0
+            -Dsonar.projectVersion=1.0 \
+            -Dsonar.qualitygate.wait=true
