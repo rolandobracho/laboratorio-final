@@ -37,8 +37,11 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          response=$(curl -s -X GET -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/issues/search?branch=pipelines&componentKeys=rolandobracho_laboratorio-final&facets=severities")
           count=$(curl -s -X GET -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/issues/search?branch=pipelines&componentKeys=rolandobracho_laboratorio-final&facets=severities" | 
                   jq -r '[.facets[0].values[] | select(.val == "CRITICAL" or .val == "HIGH" or .val == "MEDIUM") | .count] | add // 0')
+          echo "Respuesta completa de la API:"
+          echo "$response" | jq .
           if [ "$count" -gt 0 ]; then
             echo "Vulnerabilidades encontradas (Critical/High/Medium): $count"
             exit 1
