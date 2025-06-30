@@ -72,7 +72,7 @@ jobs:
 
   docker-security:
     needs: [sonarcloud-sast, dependency-check]
-    if: needs.dependency-check.outputs.check_results.has_vulnerabilities == 'false'
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
