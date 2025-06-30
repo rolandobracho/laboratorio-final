@@ -31,5 +31,16 @@ jobs:
             -Dsonar.javascript.node.version=19 \
             -Dsonar.sources=src \
             -Dsonar.projectName="laboratorio-final" \
-            -Dsonar.projectVersion=1.0 \
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.projectVersion=1.0
+      - name: Check SonarCloud Vulnerabilities
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          run: |
+            count=$(curl -s -X GET -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/issues/search?branch=pipelines&componentKeys=rolandobracho_laboratorio-final&facets=severities" | 
+                    jq '.facets[0].values[] | select(.val == "CRITICAL" or .val == "HIGH" or .val == "MEDIUM") | .count')
+            if [ "$count" -gt 0 ]; then
+              echo "Vulnerabilidades encontradas (Critical/High/Medium). Deteniendo pipeline."
+              exit 1
+            else
+              echo "No hay vulnerabilidades graves. Continuando..."
+            fi
